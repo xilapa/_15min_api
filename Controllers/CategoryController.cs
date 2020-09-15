@@ -1,9 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 using _15min_api.Models;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -17,7 +16,8 @@ namespace _15min_api.Controllers
         [HttpGet]
         // se não colocar nada, sempre será GET
         [Route("")]
-        public async Task<ActionResult<List<Category>>> Get([FromServices] DataContext context)
+        // retorna todas as categorias
+        public async Task<ActionResult<List<Category>>> GetAll([FromServices] DataContext context)
         // retorna um task de forma assíncrona, que terá um ActionResult com uma lista de categorias
         // ActionResult já da respostas compativeis com o protocolo REST
         // o "From Services" indica que o DataContext da memória sera utilizado
@@ -31,10 +31,31 @@ namespace _15min_api.Controllers
 
         }
 
+        [HttpGet]
+        [Route("{id:int}")]
+        // retorna uma categoria em específico
+        // foi feita a restrição para o id ser passada como um int
+        public async Task<ActionResult<Category>> GetById([FromServices] DataContext context, int? id)
+        {
+            var category = await context.Categories.FindAsync(id);
+            // Find async busca a entidade com o chave primária passada
+            if (id == null || category == null)
+            {
+                return new NotFoundResult();
+                // retorna a resposta 404 not found
+            }
+            else
+            {
+                return new OkObjectResult(category);
+            }
+        }
+
+
+
         [HttpPost]
         [Route("")]
-        // utilizando a conveção REST, os verbos, GET,POST,UPDATE e DELETE tem a mesma rota
-            
+        // utilizando a conveção REST, os verbos, GET,POST,PUT e DELETE tem a mesma rota
+
         public async Task<ActionResult<Category>> Post([FromServices] DataContext context, [FromBody] Category model)
         // desta vez é passado uma catergoria pelo ActionResult
         // do serviço é recebido o DataContext para ser injetado
@@ -54,6 +75,86 @@ namespace _15min_api.Controllers
             {
                 return BadRequest(ModelState);
                 // o método BadRequest já espera o ModelState
+            }
+        }
+
+
+        [HttpPut]
+        [Route("{id:int}")]
+        // A diferença entre PUT e POST é que PUT é idempotente: chamá-lo uma ou várias vezes sucessivamente terá o mesmo efeito (não é um efeito colateral),
+        //enquanto usar POST repetidamente pode ter efeitos adicionais, como passar uma ordem várias vezes.
+        public async Task<ActionResult> Put([FromServices] DataContext context, int? id, [FromBody] Category category)
+        {
+            if (id == null )
+            {
+                return new NotFoundResult();
+            }
+            else if (id != category.Id)
+            // checa se o id é o mesmo do corpo da mensagem
+            {
+                return BadRequest();
+            }
+            else if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            else
+            {
+                context.Entry(category).State = EntityState.Modified;
+                try
+                {
+                    await context.SaveChangesAsync();
+                    // tenta salvar
+                }
+                catch (DbUpdateConcurrencyException)
+                // verifica se o banco de dados não foi alterado desde que a entidade foi carregada
+                {
+                    if(!context.Categories.Any(x => x.Id == id))
+                    // verifica se a categoria com o id informado ainda existe e retorna um booleano
+                    {
+                        return new NotFoundResult();
+                    }
+                    else
+                    {
+                        throw;
+                    }
+                    
+                        
+                }
+
+                return new NoContentResult();
+                // caso não haja erros, nada é retornado
+            }
+        }
+
+        [HttpDelete]
+        [Route("{id:int}")]
+        public async Task<ActionResult> Delete([FromServices] DataContext context, int? id)
+        {
+            if (id == null )
+            {
+                return new NotFoundResult();
+            }
+            else if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            else 
+            {
+                var category = await context.Categories.FindAsync(id);
+                if (category == null)
+                // a verificação se a categoria existe pode ser feita assim como no Put com utilização do Any
+                // porém será nescessário buscar e passar o objeto category para ser deletado
+                {
+                    return new NotFoundResult();
+                }
+                else
+                {
+                    context.Categories.Remove(category);
+                    await context.SaveChangesAsync();
+                    return new OkObjectResult(category);
+                }
+
             }
         }
 
