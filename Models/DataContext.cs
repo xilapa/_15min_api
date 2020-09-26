@@ -9,8 +9,8 @@ namespace _15min_api.Models
     {
 
         public DataContext(DbContextOptions<DataContext> options) : base(options)
-        // base é utilizado para referenciar ao paramentro DbContextOptions da superClasse DbContext
-        // herda parte do construtor para o parametro em questão
+        // chama o construtor da classe pai e passa esse objeto options para o mesmo
+        // base é utilizado para referenciar o paramentro DbContextOptions da superClasse DbContext
         {
             // caso fosse utilizado outro BD, a connection string ficaria aqui
         }

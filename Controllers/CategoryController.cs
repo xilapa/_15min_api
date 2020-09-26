@@ -56,7 +56,7 @@ namespace _15min_api.Controllers
         [Route("")]
         // utilizando a conveção REST, os verbos, GET,POST,PUT e DELETE tem a mesma rota
 
-        public async Task<ActionResult<Category>> Post([FromServices] DataContext context, [FromBody] Category model)
+        public async Task<ActionResult<Category>> Post([FromServices] DataContext context, [FromBody] Category category)
         // desta vez é passado uma catergoria pelo ActionResult
         // do serviço é recebido o DataContext para ser injetado
         // e do corpo da requisição é recebida a categoria
@@ -65,11 +65,11 @@ namespace _15min_api.Controllers
             // valida se a categoria foi passada corretamente no corpo da requisição
             // ela deve atender as restrições passadas no modelo
             {
-                context.Categories.Add(model);
+                context.Categories.Add(category);
                 // o DataContext é a representação do BD em memória, nada foi persistido
                 await context.SaveChangesAsync();
                 // o SaveChangesAsync é utilizado para gravar as informações no banco
-                return new OkObjectResult(model);
+                return new OkObjectResult(category);
             }
             else
             {
@@ -134,10 +134,6 @@ namespace _15min_api.Controllers
             if (id == null )
             {
                 return new NotFoundResult();
-            }
-            else if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
             }
             else 
             {
