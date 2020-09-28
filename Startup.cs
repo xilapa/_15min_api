@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using _15min_api.Models;
 using Microsoft.AspNetCore.Builder;
@@ -12,6 +14,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.OpenApi.Models;
 
 namespace _15min_api
 {
@@ -41,6 +44,26 @@ namespace _15min_api
 
             //https://balta.io/blog/aspnet-core-dependency-injection
 
+            // gerador do arquivo de especificação da API do Swagger
+            services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new OpenApiInfo
+                // a classe OpenApiInfo requer o namespace Microsoft.OpenApi.Models
+                {
+                    Title = "Cadastro Produtos",
+                    Version = "v1",
+                    Description = "Cadastro de produtos e suas respectivas categorias"
+                });
+
+                var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+                var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+                c.IncludeXmlComments(xmlPath);
+                // esse trecho indica que o Swagger deve ler os comentários do código a partir de um arquivo XML
+                // a documentação é gerada pela IDE e deve ser habilitada no no arquivo .csproj
+
+
+            });
+
 
         }
 
@@ -64,6 +87,19 @@ namespace _15min_api
             {
                 endpoints.MapControllers();
             });
+
+            app.UseSwagger();
+            // ativa o middleware do Swagger para expor os endpoints da API como um JSON
+
+            app.UseSwaggerUI(opt =>
+            {
+                opt.SwaggerEndpoint("/swagger/v1/swagger.json", "API Produtos");
+                // Nesta parte é especificado o arquivo JSON criado com os endpoints da API
+                opt.RoutePrefix = string.Empty;
+                // define a rota para acessar a UI do swagger
+            });
+            // SwaggerUI para mostrar a documentação interativa
+            
         }
     }
 }

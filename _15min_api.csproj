@@ -3,6 +3,12 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <RootNamespace>_15min_api</RootNamespace>
+
+	 <GenerateDocumentationFile>true</GenerateDocumentationFile>
+	  <!--habilitando a geração de documentação-->
+	 <NoWarn>$(NoWarn);1591</NoWarn>
+	  <!--No Warn evita que a IDE exiba alertas para códigos sem comentários de documentação-->
+
   </PropertyGroup>
 
   <ItemGroup>
@@ -16,6 +22,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="3.1.4" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="5.6.3" />
   </ItemGroup>
 
 

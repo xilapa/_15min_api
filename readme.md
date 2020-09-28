@@ -7,4 +7,4 @@ Nesta API é feito o CRUD de produtos e categorias dos mesmos.
 
 ## Melhorias em relação ao vídeo
 - Adição dos quatro verbos HTTP (GET,POST,PUT e DELETE) para os produtos e suas categorias
-- Documentação da API com Swagger (A se fazer)
+- Documentação da API com Swagger
